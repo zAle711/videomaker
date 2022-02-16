@@ -27,6 +27,9 @@ class ImageDownloader:
     def __init__(self, file_name = "text.txt") -> None:
         self.file_name = file_name
 
+    def getQuery(self, line):
+        return re.sub(r"\(.+\)", "", line).strip()
+        
     def downloadImage(self, image_name):
         query_name = util.replaceSpace(image_name)       
         self.params.update(q=query_name)
@@ -59,10 +62,10 @@ class ImageDownloader:
     
     def downloadAllImage(self):
         with open(self.file_name, 'r') as file:
-            for query in file:
+            for line in file:
+                query = self.getQuery(line)
                 self.downloadImage(query)
 
 
 if __name__ == "__main__":
-    imgDownloader = ImageDownloader()
-    imgDownloader.downloadAllImage()
+    ImageDownloader().downloadAllImage()

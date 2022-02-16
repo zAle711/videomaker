@@ -131,3 +131,5 @@ dmypy.json
 download/
 test/
 page.html
+temp/
+output/
