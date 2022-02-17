@@ -4,6 +4,8 @@ from requests_html import HTMLSession
 from setup import DOWNLOAD_FOLDER
 import util
 from bs4 import BeautifulSoup
+import time
+import random
 
 class ImageDownloader:
    
@@ -30,7 +32,7 @@ class ImageDownloader:
     def getQuery(self, line):
         return re.sub(r"\(.+\)", "", line).strip()
         
-    def downloadImage(self, image_name):
+    def downloadImage(self, image_name, full_image_name):
         query_name = util.replaceSpace(image_name)       
         self.params.update(q=query_name)
         #Request to download page
@@ -42,30 +44,36 @@ class ImageDownloader:
         
         #Scrape page to find image url
         image_url = self.findUrl(page_content.html.html)
-        self.saveImage(image_name, image_url)
+        self.saveImage(full_image_name, image_url)
    
     def saveImage(self, image_name, image_url):
         image_data = requests.get(url=image_url, headers=self.headers).content
-        with open(DOWNLOAD_FOLDER.joinpath(image_name.rstrip()+image_url[-4:]), "wb") as image:
+        if "?" in image_name:
+            image_name = re.sub("\?", "$", image_name)
+        with open(DOWNLOAD_FOLDER.joinpath(image_name.strip()+image_url[-4:]), "wb") as image:
             image.write(image_data)
             image.flush()
    
     def findUrl(self, html_page):
-        REGEX_PATTERN = "https?:\/\/[A-Z,a-z,0-9, -. _, \.,\/]+\.jpg|jpeg|png"
+        REGEX_PATTERN = "(https?:\/\/[A-Z,a-z,0-9, -. _, \.,\/]+)(\.)(png|jpg)"
         #util.saveHTML(html_page)
         html = BeautifulSoup(html_page, "html.parser")
         urls_images = None
         for script in html.find_all('script'):
             if "AF_initDataCallback" in str(script):
                 urls_images = re.findall(REGEX_PATTERN, str(script))
-        return urls_images[0]           
+        url = "".join(urls_images[random.randint(0, 2)])
+        print(url)
+        return url           
     
     def downloadAllImage(self):
         with open(self.file_name, 'r') as file:
-            for line in file:
+            lines = file.readlines()
+            for index, line in enumerate(lines):
+                print(f"Downloading images {index+1}/{len(lines)}")
                 query = self.getQuery(line)
-                self.downloadImage(query)
-
+                self.downloadImage(query, line)
+                time.sleep(5)
 
 if __name__ == "__main__":
     ImageDownloader().downloadAllImage()

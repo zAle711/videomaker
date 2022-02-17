@@ -32,9 +32,13 @@ class VideoMaker:
             black_background.save(path)
         return images_path
     
+    def add_text(self, resized_image):
+        
+        pass    
+    
     def add_audio(self):
         subprocess.call(r"ffmpeg -i test\test.mp4 -i test\audio.wav  -vcodec copy -acodec copy -c:a aac output\test.mp4 ")
-        pass
+        
     def create_video(self):
         path = str(TEST_FOLDER.joinpath(self.video_name))
         video = cv2.VideoWriter(path, self.fourcc, 60, (self.width, self.height))
