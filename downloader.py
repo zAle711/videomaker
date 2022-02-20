@@ -14,7 +14,7 @@ class ImageDownloader:
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:49.0) Gecko/20100101 Firefox/49.0',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Language': 'it-IT,it;q=0.8,en-US;q=0.5,en;q=0.3',
         'Accept-Encoding': 'gzip, deflate',
         'DNT': '1',
         'Connection': 'keep-alive',
@@ -30,7 +30,7 @@ class ImageDownloader:
         self.file_name = file_name
 
     def getQuery(self, line):
-        return re.sub(r"\(.+\)", "", line).strip()
+        return re.sub(r"\(.+\)", "", line.split("-")[1]).strip()
         
     def downloadImage(self, image_name, full_image_name):
         query_name = util.replaceSpace(image_name)       
@@ -48,6 +48,7 @@ class ImageDownloader:
    
     def saveImage(self, image_name, image_url):
         image_data = requests.get(url=image_url, headers=self.headers).content
+        #cant name a file with ? 
         if "?" in image_name:
             image_name = re.sub("\?", "$", image_name)
         with open(DOWNLOAD_FOLDER.joinpath(image_name.strip()+image_url[-4:]), "wb") as image:
@@ -62,9 +63,9 @@ class ImageDownloader:
         for script in html.find_all('script'):
             if "AF_initDataCallback" in str(script):
                 urls_images = re.findall(REGEX_PATTERN, str(script))
-        url = "".join(urls_images[random.randint(0, 2)])
-        print(url)
-        return url           
+        #join list of 3 groups matched with regex
+        urls = ["".join(url) for url in urls_images]
+        return urls[random.randint(0,5)]
     
     def downloadAllImage(self):
         with open(self.file_name, 'r') as file:

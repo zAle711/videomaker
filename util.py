@@ -8,3 +8,9 @@ def saveHTML(html_content):
 
 def replaceSpace(name):
     return re.sub(' ', '+', name)
+
+def replaceText(text):
+    new_text = re.sub("\(", "", text)
+    new_text = re.sub("\)", "", new_text)
+    new_text = re.sub("\$", "?", new_text)
+    return new_text

@@ -1,15 +1,15 @@
-Questo (e' per te) 
-brutto 
-pezzo di merda
-(di) Magi di Montecchio
-Guarda 
-che bella 
-(f..)guarda 
-che bella 
-figura di merda(,) 
-guarda
-(Son) tartufi 
-Magi(?) 
-Signor Magi(,) 
-son tartufi(?)
-Penso di no(...)
+1-Questo (e' per te) 
+0.5-brutto 
+1-pezzo di merda
+1-(di) Magi di Montecchio
+0.5-Guarda 
+0.5-che bella 
+0.5-(f..) guarda 
+0.5-che bella 
+1-figura di merda
+0.5-guarda
+0.5-(Son) tartufi 
+0.5-Magi(?) 
+1-Signor Magi
+1-son tartufi(?)
+1-Penso di no
