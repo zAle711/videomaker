@@ -2,7 +2,7 @@ import os
 import subprocess
 import cv2
 from PIL import Image, ImageDraw, ImageFont
-from setup import DOWNLOAD_FOLDER, OUTPUT_FOLDER, TEMP_FOLDER, TEST_FOLDER
+from setup import DOWNLOAD_FOLDER, OUTPUT_FOLDER, TEMP_FOLDER
 from pathlib import Path
 from util import replaceText
 import re
@@ -17,12 +17,7 @@ class VideoMaker:
         self.images = [img for img in os.listdir("download")]
         self.font_path = "arial.ttf"
         self.font_size = 75
-        self.fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         self.resized_images = self.resize_images()
-
-    def print_images(self):
-        for img in self.images:
-            print(img)
     
     def resize_images(self):
         images_path = []
@@ -63,14 +58,15 @@ class VideoMaker:
        
     def create_video(self):
         path = str(OUTPUT_FOLDER.joinpath(self.video_name))
-        video = cv2.VideoWriter(path, self.fourcc, 60, (self.width, self.height))
+        _fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        video = cv2.VideoWriter(path, _fourcc, 60, (self.width, self.height))
         with open("text.txt", "r") as file:
             for line in file.readlines():
                 time = line.split("-")[0]
                 image = self.getImageName(line)
                 frames_to_write = int(float(time)*60)
                 print(f"Writing image: {image} for {frames_to_write} frames")
-                for i in range(0,frames_to_write):
+                for _ in range(0,frames_to_write):
                     video.write(cv2.imread(os.path.join("temp", image)))
 
         cv2.destroyAllWindows()
