@@ -28,6 +28,7 @@ class ImageDownloader:
 
     def __init__(self, file_name = "text.txt") -> None:
         self.file_name = file_name
+        self.current_line = 0
 
     def getQuery(self, line):
         return re.sub(r"\(.+\)", "", line.split("-")[1]).strip()
@@ -67,6 +68,17 @@ class ImageDownloader:
         urls = ["".join(url) for url in urls_images]
         return urls[random.randint(0,5)]
     
+    def readFileLine(self):
+        
+        with open(self.file_name, "r") as fp:
+            
+            for i,line in enumerate(fp):
+                if i == self.current_line:
+                    self.current_line += 1
+                    return line.strip()
+            
+            return None
+                           
     def downloadAllImage(self):
         with open(self.file_name, 'r') as file:
             lines = file.readlines()

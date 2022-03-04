@@ -24,27 +24,38 @@ class MainWindow(QtWidgets.QMainWindow):
         self.central_widget.addWidget(main_window)
         self.setWindowTitle(self.central_widget.currentWidget().windowTitle())
         
-        downloader_window = DownloaderWindow()
-        self.central_widget.addWidget(downloader_window)
+        
+
+    def addWidget(self, widget):
+        self.central_widget.add
 
     def next_window(self):
-        print("DIO PORCO")
         text_path, audio_path = self.ui.getPaths()
-        print(text_path +" " + audio_path)
-        if pathlib.Path(text_path).is_file() and pathlib.Path(audio_path).is_file():
+                
+        #get new window to set text file path
+        downloader_window = self.central_widget.widget(Window.DOWNLOADER.value)
+
+        if pathlib.Path(text_path).is_file():
+            #checks if windows is created, if not create it with valid path
+            if not self.central_widget.widget(Window.DOWNLOADER.value):
+                downloader_window = DownloaderWindow(text_path)
+                self.central_widget.addWidget(downloader_window)
+            
             self.central_widget.setCurrentIndex(Window.DOWNLOADER.value)
         
 
 
 class DownloaderWindow(QtWidgets.QWidget):
-    def __init__(self, parent= None):
+    def __init__(self, file_text_path ,parent= None):
         super(DownloaderWindow, self).__init__(parent)
-        ui = Ui_DownloaderWindow()
-        ui.setupUi(self)
-        ui.button_back.clicked.connect(self.back_window)
+        self.ui = Ui_DownloaderWindow(file_text_path)
+        self.ui.setupUi(self)
+        self.ui.button_back.clicked.connect(self.back_window)
     
     def back_window(self):
         self.parent().setCurrentIndex(Window.MAIN.value)
+    def set_path(self):
+        self.parent().label_title.setText("DIO PORCO")
         
 if __name__ == '__main__':
     import sys

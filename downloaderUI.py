@@ -9,9 +9,13 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from downloader import ImageDownloader
 
 class Ui_DownloaderWindow(object):
+    
+    def __init__(self, file_text_path):
+        self.file_text_path = file_text_path
+    
     def setupUi(self, DownloaderWindow):
         DownloaderWindow.setObjectName("DownloaderWindow")
         DownloaderWindow.resize(800, 600)
@@ -68,11 +72,13 @@ class Ui_DownloaderWindow(object):
         font.setPointSize(10)
         self.button_create_video.setFont(font)
         self.button_create_video.setObjectName("button_create_video")
-
-        self.label_image.setPixmap(QtGui.QPixmap("temp/0.5-(f..) guarda.jpg"))
-
+        
         self.retranslateUi(DownloaderWindow)
         QtCore.QMetaObject.connectSlotsByName(DownloaderWindow)
+
+        #my edit to QTdesigner code
+        self.image_downloader = ImageDownloader(self.file_text_path)
+
 
     def retranslateUi(self, DownloaderWindow):
         _translate = QtCore.QCoreApplication.translate
