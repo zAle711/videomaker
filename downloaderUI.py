@@ -79,7 +79,6 @@ class Ui_DownloaderWindow(object):
         #my edit to QTdesigner code
         self.image_downloader = ImageDownloader(self.file_text_path)
 
-
     def retranslateUi(self, DownloaderWindow):
         _translate = QtCore.QCoreApplication.translate
         DownloaderWindow.setWindowTitle(_translate("DownloaderWindow", "Image Downloader"))

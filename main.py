@@ -1,5 +1,7 @@
+import asyncio
 import pathlib
-from tkinter.tix import MAIN
+import threading
+import time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from downloaderUI import Ui_DownloaderWindow
 from mainwindowUi import Ui_mainWindow
@@ -23,11 +25,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.button_new_window.clicked.connect(self.next_window)
         self.central_widget.addWidget(main_window)
         self.setWindowTitle(self.central_widget.currentWidget().windowTitle())
-        
-        
-
-    def addWidget(self, widget):
-        self.central_widget.add
 
     def next_window(self):
         text_path, audio_path = self.ui.getPaths()
@@ -37,11 +34,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if pathlib.Path(text_path).is_file():
             #checks if windows is created, if not create it with valid path
-            if not self.central_widget.widget(Window.DOWNLOADER.value):
+            if not downloader_window:
                 downloader_window = DownloaderWindow(text_path)
                 self.central_widget.addWidget(downloader_window)
             
-            self.central_widget.setCurrentIndex(Window.DOWNLOADER.value)
+            self.central_widget.setCurrentIndex(Window.DOWNLOADER.value)           
         
 
 
@@ -51,7 +48,14 @@ class DownloaderWindow(QtWidgets.QWidget):
         self.ui = Ui_DownloaderWindow(file_text_path)
         self.ui.setupUi(self)
         self.ui.button_back.clicked.connect(self.back_window)
-    
+
+        
+    def showEvent(self, event):
+        loop = asyncio.new_event_loop()
+        a = loop.run_until_complete(self.ui.image_downloader.getAllUrls())
+        print(a)   
+
+
     def back_window(self):
         self.parent().setCurrentIndex(Window.MAIN.value)
     def set_path(self):
