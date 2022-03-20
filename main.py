@@ -1,10 +1,10 @@
 import asyncio
 import pathlib
-import threading
-import time
-from PyQt5 import QtCore, QtGui, QtWidgets
-from downloaderUI import Ui_DownloaderWindow
-from mainwindowUi import Ui_mainWindow
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import pyqtSignal 
+from PyQt5.QtGui import QPixmap
+from downloader import ImageDownloader
+from qasync import QEventLoop, asyncSlot
 import enum
 
 class Window(enum.Enum):
@@ -12,58 +12,94 @@ class Window(enum.Enum):
     DOWNLOADER = 1
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent = None):
+    def __init__(self,parent = None):
         super(MainWindow, self).__init__(parent)
+        #self.loop = asyncio.get_event_loop()
         self.resize(800,600)
 
-        self.central_widget = QtWidgets.QStackedWidget()
-        self.setCentralWidget(self.central_widget)
-
+        self.stacked_widget = QtWidgets.QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
+        #creating window
         main_window = QtWidgets.QWidget()
-        self.ui = Ui_mainWindow()
-        self.ui.setupUi(main_window)
-        self.ui.button_new_window.clicked.connect(self.next_window)
-        self.central_widget.addWidget(main_window)
-        self.setWindowTitle(self.central_widget.currentWidget().windowTitle())
+        uic.loadUi('mainwindowUI.ui', main_window)
+        #linking function to buttons
+        main_window.button_new_window.clicked.connect(self.next_window)
+        main_window.button_path_text.clicked.connect(self.setTextPath)
+        main_window.button_path_audio.clicked.connect(self.setAudioPath)
+        
+        self.stacked_widget.addWidget(main_window)
+        self.setWindowTitle(self.stacked_widget.currentWidget().windowTitle())
+    
+    def getPaths(self):
+        window = self.stacked_widget.widget(Window.MAIN.value)
+        return [window.text_path.text(), window.audio_path.text()]
+
+    def setTextPath(self):
+        fname, _ = QtWidgets.QFileDialog.getOpenFileName( caption="Choose a text file", filter="Text file (*.txt)")
+        window = self.stacked_widget.currentWidget()
+        window.text_path.setText(fname)
+    
+    def setAudioPath(self):
+        fname, _ = QtWidgets.QFileDialog.getOpenFileName( caption="Choose an audio file", filter="Text file (*.wav)")
+        window = self.stacked_widget.currentWidget()
+        window.audio_path.setText(fname)
+
 
     def next_window(self):
-        text_path, audio_path = self.ui.getPaths()
+        text_path, audio_path = self.getPaths()
                 
         #get new window to set text file path
-        downloader_window = self.central_widget.widget(Window.DOWNLOADER.value)
+        downloader_window = self.stacked_widget.widget(Window.DOWNLOADER.value)
 
         if pathlib.Path(text_path).is_file():
             #checks if windows is created, if not create it with valid path
             if not downloader_window:
                 downloader_window = DownloaderWindow(text_path)
-                self.central_widget.addWidget(downloader_window)
+                self.stacked_widget.addWidget(downloader_window)
             
-            self.central_widget.setCurrentIndex(Window.DOWNLOADER.value)           
+            self.stacked_widget.setCurrentIndex(Window.DOWNLOADER.value)           
         
 
 
 class DownloaderWindow(QtWidgets.QWidget):
-    def __init__(self, file_text_path ,parent= None):
+    url_signal = pyqtSignal()
+    def __init__(self, file_text_path, parent= None):
         super(DownloaderWindow, self).__init__(parent)
-        self.ui = Ui_DownloaderWindow(file_text_path)
-        self.ui.setupUi(self)
-        self.ui.button_back.clicked.connect(self.back_window)
+        self.file_text_path = file_text_path
+        #self.loop = asyncio.get_event_loop()
 
+        uic.loadUi('downloaderUI.ui', self)
+        self.image_downloader = ImageDownloader(file_text_path)
+        self.button_back.clicked.connect(self.back_window)
+        self.url_signal.connect(self.show_image)
+        self.getUrls() 
+
+
+
+    @asyncSlot()
+    async def getUrls(self):
+        await self.image_downloader.getAllUrls()
+        self.url_signal.emit()
+
+    @asyncSlot()
+    async def show_image(self):
+        x = await self.image_downloader.downloadImage("https://www.adgblog.it/wp-content/uploads/2018/10/aggettivipronomidimostrativi6001.jpg")
+        pixelmap = QPixmap()
+        pixelmap.loadFromData(x)
         
-    def showEvent(self, event):
-        loop = asyncio.new_event_loop()
-        a = loop.run_until_complete(self.ui.image_downloader.getAllUrls())
-        print(a)   
-
-
+        self.label_image.setPixmap(pixelmap)
     def back_window(self):
         self.parent().setCurrentIndex(Window.MAIN.value)
+
     def set_path(self):
         self.parent().label_title.setText("DIO PORCO")
         
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    loop = QEventLoop(app)
+    asyncio.set_event_loop(loop)
     window = MainWindow()
     window.show()
-    app.exec_()
+    with loop:
+        loop.run_forever()

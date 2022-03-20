@@ -133,6 +133,7 @@ test/
 page.html
 temp/
 output/
-*.ui
+downloaderUI.py
+mainwindowUi.py
 test.py
 testasyncio.py

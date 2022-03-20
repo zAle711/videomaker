@@ -6,6 +6,7 @@ import util
 from bs4 import BeautifulSoup
 import time
 import random
+import aiohttp
 
 class ImageDownloader:
    
@@ -98,6 +99,16 @@ class ImageDownloader:
             image.write(image_data)
             image.flush()
 
+    async def downloadImage(self, url:str):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                reader = resp.content
+                data = bytearray()
+                while not reader.at_eof():
+                    chunk = await reader.read(1024)
+                    data += chunk
+                return data
+
     async def getAllUrls(self):
         file_line = self.readFileLine()
         if (file_line):
@@ -105,7 +116,7 @@ class ImageDownloader:
             html_page = await self.getPageContent(query)
             self.current_urls = self.findUrl(html_page)
             print(f"Urls trovati -> {self.current_urls}")
-            return self.current_urls
+            return self.current_urls if len(self.current_urls) < 10 else self.current_urls[:10]
 
 
     def getUrls(self):
