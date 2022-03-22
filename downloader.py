@@ -1,3 +1,6 @@
+from asyncio import tasks
+import asyncio
+from csv import reader
 import re
 import requests
 from requests_html import AsyncHTMLSession
@@ -108,6 +111,27 @@ class ImageDownloader:
                     chunk = await reader.read(1024)
                     data += chunk
                 return data
+
+    async def fetch(self, session: aiohttp.ClientSession, url:str):
+        async with session.get(url) as response:
+            if response.status != 200:
+                response.raise_for_status()
+            reader = response.content
+            data = bytearray()
+            while not reader.at_eof():
+                chunk = await reader.read(1024)
+                data += chunk
+            return data 
+    
+    async def fetchAll(self, urls):
+        tasks = []
+        async with aiohttp.ClientSession() as session:
+            for url in urls:
+                task = asyncio.create_task(self.fetch(session,url))
+                tasks.append(task)
+            return await asyncio.gather(*tasks)
+
+           
 
     async def getAllUrls(self):
         file_line = self.readFileLine()

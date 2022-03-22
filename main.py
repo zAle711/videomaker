@@ -63,6 +63,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 class DownloaderWindow(QtWidgets.QWidget):
     url_signal = pyqtSignal()
+    current_index = 0
+    urls_loaded = False
     def __init__(self, file_text_path, parent= None):
         super(DownloaderWindow, self).__init__(parent)
         self.file_text_path = file_text_path
@@ -70,25 +72,29 @@ class DownloaderWindow(QtWidgets.QWidget):
 
         uic.loadUi('downloaderUI.ui', self)
         self.image_downloader = ImageDownloader(file_text_path)
-        self.button_back.clicked.connect(self.back_window)
-        self.url_signal.connect(self.show_image)
-        self.getUrls() 
+        self.button_back.clicked.connect(self.previousWindow)
+        self.url_signal.connect(self.showImage)
+        self.current_urls = self.getUrls() 
 
-
-
+    def previousImage(self):
+        pass
+    def nextImage(self):
+        pass
     @asyncSlot()
     async def getUrls(self):
-        await self.image_downloader.getAllUrls()
+        self.urls = await self.image_downloader.getAllUrls()
         self.url_signal.emit()
 
     @asyncSlot()
-    async def show_image(self):
-        x = await self.image_downloader.downloadImage("https://www.adgblog.it/wp-content/uploads/2018/10/aggettivipronomidimostrativi6001.jpg")
+    async def showImage(self):
+        images = await self.image_downloader.fetchAll(self.urls)
+        self.images = [img for img in images]
         pixelmap = QPixmap()
-        pixelmap.loadFromData(x)
+        pixelmap.loadFromData(self.images[0])
         
-        self.label_image.setPixmap(pixelmap)
-    def back_window(self):
+        self.label_image.setPixmap(pixelmap.scaled(600,430))
+    
+    def previousWindow(self):
         self.parent().setCurrentIndex(Window.MAIN.value)
 
     def set_path(self):
